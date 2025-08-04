@@ -1,9 +1,9 @@
 
 
 use serde::{Deserialize , Serialize};
+use sqlx::types::Json;
 use uuid::Uuid;
 use chrono::{NaiveDate , DateTime , Utc};
-use Sqlx::types::Json;
 
 #[derive(Debug , Serialize , Deserialize , sqlx::FromRow)]
 pub struct FarmActivity {
