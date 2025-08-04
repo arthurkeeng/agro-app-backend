@@ -85,7 +85,7 @@ pub async fn resend_otp(
                 "message": "OTP sent successfully"
             })))
         }
-        Err(e) => {
+        Err(_e) => {
             log::info!("Otp sent successfully");
              Ok(HttpResponse::InternalServerError().json(json!({
                 "error": "Failed to send OTP",
