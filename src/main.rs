@@ -12,23 +12,29 @@ mod services;
 mod utils;
 mod errors;
 
-
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     env_logger::init();
     dotenv::dotenv().ok();
 
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-
     let db = Database::new(&database_url).await.expect("Failed to connect to the database");
 
+    // Get the port from the environment variable (Render provides this)
+    let port = env::var("PORT")
+        .unwrap_or_else(|_| "3001".to_string()) // default for local development
+        .parse::<u16>()
+        .expect("PORT must be a number");
 
-    HttpServer::new(move||{
+    println!("Starting server on port: {}", port);
+
+    HttpServer::new(move || {
         let cors = Cors::default()
             .allow_any_origin()
             .allow_any_method()
             .allow_any_header()
             .max_age(3600);
+
         App::new()
             .app_data(web::Data::new(db.clone()))
             .wrap(cors)
@@ -36,20 +42,16 @@ async fn main() -> std::io::Result<()> {
             .route("/api/health_check", web::get().to(health_check))
             .service(
                 web::scope("/api/farmers")
-                .route("register", web::post().to(register_farmer))
-                .route("verify-phone", web::post().to(verify_phone))
+                    .route("register", web::post().to(register_farmer))
+                    .route("verify-phone", web::post().to(verify_phone)),
             )
-
     })
-    .bind("127.0.0.1:3001")?
+    .bind(("0.0.0.0", port))? // Bind to all interfaces
     .run()
     .await
-    
 }
 
-async fn health_check() -> ActixResult<&'static str>{
+async fn health_check() -> ActixResult<&'static str> {
     println!("The health check endpoint was called");
     Ok("Ok")
 }
-
-
