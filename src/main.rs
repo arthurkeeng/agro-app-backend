@@ -1,9 +1,10 @@
-use actix_web::{web, App, HttpServer, middleware::Logger, Result as ActixResult};
+use actix_session::{storage::CookieSessionStore, Session, SessionMiddleware};
+use actix_web::{cookie::Key, middleware::Logger, web, App, HttpServer, Result as ActixResult};
 use actix_cors::Cors;
 use std::env;
 use database::Database;
 
-use crate::handlers::farmers::{register_farmer, verify_phone};
+use crate::handlers::farmers::{farmer_login, register_farmer, verify_phone};
 
 mod models;
 mod handlers;
@@ -27,7 +28,7 @@ async fn main() -> std::io::Result<()> {
         .expect("PORT must be a number");
 
     println!("Starting server on port: {}", port);
-
+    let secret_key = Key::generate();
     HttpServer::new(move || {
         let cors = Cors::default()
             .allow_any_origin()
@@ -38,12 +39,20 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(web::Data::new(db.clone()))
             .wrap(cors)
+            .wrap(SessionMiddleware::new(
+                CookieSessionStore::default(), secret_key.clone()
+            ))
             .wrap(Logger::default())
             .route("/api/health_check", web::get().to(health_check))
             .service(
                 web::scope("/api/farmers")
-                    .route("register", web::post().to(register_farmer))
-                    .route("verify-phone", web::post().to(verify_phone)),
+                    .route("/register", web::post().to(register_farmer))
+                    .route("/login", web::post().to(farmer_login))
+                    .route("/verify-phone", web::post().to(verify_phone)),
+            )
+            .service(
+                web::scope("/api/products")
+                .route("" , web::post().to(handlers::products::add_products))
             )
     })
     .bind(("0.0.0.0", port))? // Bind to all interfaces

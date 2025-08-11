@@ -37,7 +37,7 @@ pub struct CreateFarmRequest {
     pub primary_crops: Option<Vec<String>>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize , Clone)]
 pub struct VerifyPhoneRequest {
     pub phone_number: String,
     pub otp_code: String,
@@ -52,4 +52,26 @@ pub struct FarmerResponse {
     pub last_name: String,
     pub verification_status: String,
     pub profile_completed: bool,
+}
+
+#[derive (Debug , Deserialize)]
+pub struct FarmerLogin{
+    pub phone_number : String
+}
+
+#[derive (Debug , Serialize)]
+pub struct LoginResponse{
+    pub id: Uuid,
+    pub phone_number: String,
+    pub email: Option<String>,
+    pub first_name: String,
+    pub last_name: String,
+   
+}
+
+#[derive(Debug , Serialize , Deserialize , sqlx::FromRow)] 
+pub struct FarmerSession{
+    pub farmer_id: Uuid,
+    pub farm_id: String,
+    pub name: String,
 }
