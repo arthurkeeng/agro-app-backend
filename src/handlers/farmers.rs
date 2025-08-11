@@ -42,50 +42,53 @@ pub async fn verify_phone(
 ) -> ActixResult<HttpResponse> {
 
     let phone_number = payload.clone().phone_number;
-    
-    match services::farmer_service::verify_phone_number(&db, payload.into_inner()).await {
+    let payload = VerifyPhoneRequest{
+        phone_number : "08100944296".to_string(),
+        otp_code : payload.into_inner().otp_code
+    };
+    match services::farmer_service::verify_phone_number(&db, payload).await {
         Ok(success) => {
             if success == true {
                 log::info!("Farmer verification completed");
 
                 // get the farmer and the farm from the id . The farmer is gotten from the phone number
 
-                let farmer : Farmer = sqlx::query_as::<_, Farmer>(
-                    r#"
-                        SELECT id , email , phone_number , first_name FROM farmers WHERE phone_number = $1
-                        Limit 1
-                    "#
-                )
-                .bind(&phone_number)
-                .fetch_one(&db.pool)
-                .await
-                .map_err(|e| {
-                log::error!("Failed to fetch farmer: {:?}", e);
-                actix_web::error::ErrorInternalServerError("Error fetching farmer")
-            })?;
+            //     let farmer : Farmer = sqlx::query_as::<_, Farmer>(
+            //         r#"
+            //             SELECT id , email , phone_number , first_name FROM farmers WHERE phone_number = $1
+            //             Limit 1
+            //         "#
+            //     )
+            //     .bind(&phone_number)
+            //     .fetch_one(&db.pool)
+            //     .await
+            //     .map_err(|e| {
+            //     log::error!("Failed to fetch farmer: {:?}", e);
+            //     actix_web::error::ErrorInternalServerError("Error fetching farmer")
+            // })?;
 
-                let farm : FarmResponse = sqlx::query_as::<_, FarmResponse>(
-                    r#"
-                        SELECT id  FROM farm WHERE phone_number = $1
-                        Limit 1
-                    "#
-                )
-                .bind(&phone_number)
-                .fetch_one(&db.pool)
-                .await
-                .map_err(|e| {
-                log::error!("Failed to fetch farm: {:?}", e);
-                actix_web::error::ErrorInternalServerError("Error fetching farm")
-            })?;
+            //     let farm : FarmResponse = sqlx::query_as::<_, FarmResponse>(
+            //         r#"
+            //             SELECT id  FROM farm WHERE phone_number = $1
+            //             Limit 1
+            //         "#
+            //     )
+            //     .bind(&phone_number)
+            //     .fetch_one(&db.pool)
+            //     .await
+            //     .map_err(|e| {
+            //     log::error!("Failed to fetch farm: {:?}", e);
+            //     actix_web::error::ErrorInternalServerError("Error fetching farm")
+            // })?;
                 
-                let farmer = FarmerSession{
-                    farmer_id : farmer.id , 
-                    farm_id : farm.id,
-                    name : farmer.first_name
-                };
+            //     let farmer = FarmerSession{
+            //         farmer_id : farmer.id , 
+            //         farm_id : farm.id,
+            //         name : farmer.first_name
+            //     };
 
-                let json = serde_json::to_string(&farmer).unwrap();
-               session.insert("farmer", json).unwrap();
+            //     let json = serde_json::to_string(&farmer).unwrap();
+            //    session.insert("farmer", json).unwrap();
                 Ok(HttpResponse::Ok().json(json!(
                     {
                         "success" : true , "message" : "Phone verified successfully"
