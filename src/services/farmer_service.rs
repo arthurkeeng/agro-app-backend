@@ -82,8 +82,6 @@ pub async fn create_farmer(db: &Database, request: CreateFarmerRequest) -> AppRe
     })
 }
 
-
-
 pub async fn send_otp(db: &Database, phone_number: &str) -> AppResult<()> {
     let otp_code = generate_otp();
     let expires_at = Utc::now() + Duration::minutes(30);
@@ -116,8 +114,6 @@ pub async fn send_otp(db: &Database, phone_number: &str) -> AppResult<()> {
 
     Ok(())
 }
-
-
 
 pub async fn verify_phone_number(db: &Database, request: VerifyPhoneRequest) -> AppResult<bool> {
     let row = sqlx::query(
@@ -163,8 +159,6 @@ pub async fn verify_phone_number(db: &Database, request: VerifyPhoneRequest) -> 
     Ok(false)
 }
 
-
-
 pub async fn send_login_otp(db: &Database, request: FarmerLogin) -> AppResult<bool> {
     if request.phone_number.is_empty() {
         return Err(AppError::ValidationError("No phone number provided".to_string()));
@@ -183,8 +177,6 @@ pub async fn send_login_otp(db: &Database, request: FarmerLogin) -> AppResult<bo
 
     Ok(true)
 }
-
-
 
 pub async fn login_farmer_after_otp(db: &Database, request: VerifyPhoneRequest) -> AppResult<LoginResponse> {
     println!("logging after otp {:?}", request);

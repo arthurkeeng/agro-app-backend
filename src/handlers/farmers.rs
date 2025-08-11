@@ -52,7 +52,7 @@ pub async fn verify_phone(
 
                 let farmer : Farmer = sqlx::query_as::<_, Farmer>(
                     r#"
-                        SELECT id , email , phone_number , first_name FROM farmers WHERE phone_number = $1
+                        SELECT * FROM farmers WHERE phone_number = $1
                         Limit 1
                     "#
                 )
@@ -66,7 +66,7 @@ pub async fn verify_phone(
 
                 let farm : FarmResponse = sqlx::query_as::<_, FarmResponse>(
                     r#"
-                        SELECT id  FROM farm WHERE phone_number = $1
+                        SELECT * FROM farm WHERE phone_number = $1
                         Limit 1
                     "#
                 )
@@ -84,7 +84,7 @@ pub async fn verify_phone(
                     name : farmer.first_name
                 };
 
-                let json = serde_json::to_string(&farmer).unwrap();
+               let json = serde_json::to_string(&farmer).unwrap();
                session.insert("farmer", json).unwrap();
                 Ok(HttpResponse::Ok().json(json!(
                     {
@@ -142,6 +142,7 @@ pub async fn farmer_login (
     db: web::Data<Database>,
     payload: web::Json<FarmerLogin>
 ) -> ActixResult<HttpResponse>{
+    
     log::info!("Logging in farmer");
 
     match services::farmer_service::send_login_otp(&db, payload.into_inner()).await{
